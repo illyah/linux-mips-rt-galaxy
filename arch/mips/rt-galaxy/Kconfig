@@ -1,0 +1,8 @@
+config RTGALAXY_RECLAIM_BOOT_MEMORY
+	bool "reclaim memory from bootloader"
+
+#
+# TODO
+#
+#config RTGALAXY_WATCHDOG
+#	bool "use internal watchdog"

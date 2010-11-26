@@ -1,0 +1,8 @@
+#
+# Realtek Galaxy SoC boards
+#
+
+platform-${CONFIG_RTGALAXY}	+= rt-galaxy/
+cflags-${CONFIG_RTGALAXY}	+= -I$(srctree)/arch/mips/include/asm/mach-rt-galaxy/
+load-${CONFIG_RTGALAXY}		:= 0xffffffff80100000
+all-$(CONFIG_RTGALAXY)		:= $(COMPRESSION_FNAME).bin
