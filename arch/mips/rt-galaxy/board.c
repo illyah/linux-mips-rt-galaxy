@@ -16,21 +16,21 @@
 struct rtgalaxy_board *rtgalaxy_board_info;
 
 static struct rtgalaxy_board rtgalaxy_em7080_info = {
-	.name			= "em7080",
-	.ext_freq		= 27000000,
-	.has_eth0		= 1,
-	.has_pci		= 0,
-	.has_pccard		= 0,
-	.has_ohci0		= 1,
-	.has_ehci0		= 1,
-	.has_sata0		= 1,
-	.has_sata1		= 1,
-	.has_uart0		= 1,
-	.has_uart1		= 1,
-	.has_vfd		= 0,
-	.machine_restart	= NULL,
-	.machine_halt		= NULL,
-	.machine_poweroff	= NULL,
+	.name = "em7080",
+	.ext_freq = 27000000,
+	.has_eth0 = 1,
+	.has_pci = 0,
+	.has_pccard = 0,
+	.has_ohci0 = 1,
+	.has_ehci0 = 1,
+	.has_sata0 = 1,
+	.has_sata1 = 1,
+	.has_uart0 = 1,
+	.has_uart1 = 1,
+	.has_vfd = 0,
+	.machine_restart = NULL,
+	.machine_halt = NULL,
+	.machine_poweroff = NULL,
 };
 
 /*
@@ -50,12 +50,12 @@ static void rtgalaxy_common_machine_restart(char *cmd)
 	 */
 	outl(0x0, RTGALAXY_TIMR_TCWCR);
 #endif
-	while(1);
+	while (1) ;
 }
 
 static void rtgalaxy_common_machine_halt(void)
 {
-	while(1);
+	while (1) ;
 }
 
 /*
@@ -88,9 +88,8 @@ void rtgalaxy_detect_soc(void)
 	rtgalaxy_board_info->chip_rev = (id >> 16) & 0xffff;
 
 	printk("Detected rtd%04x rev %x SoC (%s)\n",
-		rtgalaxy_board_info->chip_id,
-		rtgalaxy_board_info->chip_rev,
-		rtgalaxy_get_soc_name());
+	       rtgalaxy_board_info->chip_id,
+	       rtgalaxy_board_info->chip_rev, rtgalaxy_get_soc_name());
 }
 
 /*
@@ -120,18 +119,18 @@ void rtgalaxy_board_setup(void)
 	}
 
 	if (rtgalaxy_board_info->machine_restart == NULL) {
-        	rtgalaxy_board_info->machine_restart =
-			rtgalaxy_common_machine_restart;
+		rtgalaxy_board_info->machine_restart =
+		    rtgalaxy_common_machine_restart;
 	}
 
 	if (rtgalaxy_board_info->machine_halt == NULL) {
 		rtgalaxy_board_info->machine_halt =
-			rtgalaxy_common_machine_halt;
+		    rtgalaxy_common_machine_halt;
 	}
 
 	if (rtgalaxy_board_info->machine_poweroff == NULL) {
 		rtgalaxy_board_info->machine_poweroff =
-			rtgalaxy_common_machine_halt;
+		    rtgalaxy_common_machine_halt;
 	}
 
 	printk("Detected %s board\n", rtgalaxy_board_info->name);

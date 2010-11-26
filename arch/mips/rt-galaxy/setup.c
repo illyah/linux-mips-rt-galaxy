@@ -55,7 +55,7 @@ extern void rtgalaxy_board_setup(void);
 
 static void register_panic_notifier(void);
 static int panic_handler(struct notifier_block *notifier_block,
-			unsigned long event, void *cause_string);
+			 unsigned long event, void *cause_string);
 
 /*
  * Install a panic notifier for platform-specific diagnostics
@@ -71,19 +71,19 @@ static void register_panic_notifier()
 }
 
 static int panic_handler(struct notifier_block *notifier_block,
-			unsigned long event, void *cause_string)
+			 unsigned long event, void *cause_string)
 {
 	struct pt_regs my_regs;
 
 	/* Save all of the registers */
 	{
-		unsigned long at, v0, v1;       /* Must be on the stack */
+		unsigned long at, v0, v1;	/* Must be on the stack */
 
-	/* Start by saving $at and v0 on the stack. We use $at
-	 * ourselves, but it looks like the compiler may use v0 or v1
-	 * to load the address of the pt_regs structure. We'll come
-	 * back later to store the registers in the pt_regs
-	 * structure. */
+		/* Start by saving $at and v0 on the stack. We use $at
+		 * ourselves, but it looks like the compiler may use v0 or v1
+		 * to load the address of the pt_regs structure. We'll come
+		 * back later to store the registers in the pt_regs
+		 * structure. */
 		__asm__ __volatile__(".set	noat\n"
 				     LONG_S_ "$at, %[at]\n"
 				     LONG_S_ "$2, %[v0]\n"
@@ -155,7 +155,7 @@ static int panic_handler(struct notifier_block *notifier_block,
 	}
 
 	pr_emerg("I'm feeling a bit sleepy. hmmmmm... perhaps a nap would... "
-		"zzzz... \n");
+		 "zzzz... \n");
 
 	return NOTIFY_DONE;
 }

@@ -37,4 +37,3 @@ static inline int rtgalaxy_is_jupiter_soc(void)
 }
 
 #endif
-

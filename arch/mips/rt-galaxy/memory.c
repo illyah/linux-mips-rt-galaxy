@@ -51,7 +51,7 @@ static struct prom_pmemblock *__init prom_getmdesc(void)
 	memsize_str = prom_getenv("memsize");
 	if (!memsize_str) {
 		printk(KERN_WARNING
-			"memsize not set in boot prom, set to default (32Mb)\n");
+		       "memsize not set in boot prom, set to default (32Mb)\n");
 		physical_memsize = 0x02000000;
 	} else {
 #ifdef DEBUG
@@ -166,10 +166,10 @@ void __init prom_free_prom_memory(void)
 
 		addr = boot_mem_map.map[i].addr;
 		free_init_pages("prom memory",
-			addr, addr + boot_mem_map.map[i].size);
+				addr, addr + boot_mem_map.map[i].size);
 		recl +=
-		  (1 +
-		    (boot_mem_map.map[i].size >> PAGE_SHIFT)) << PAGE_SHIFT;
+		    (1 +
+		     (boot_mem_map.map[i].size >> PAGE_SHIFT)) << PAGE_SHIFT;
 	}
 
 	printk("Freeing PROM memory: %luk\n", recl / 1024);

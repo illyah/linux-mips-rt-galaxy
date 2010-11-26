@@ -41,7 +41,7 @@ static struct platform_device rtgalaxy_serial8250_device = {
 	.id = PLAT8250_DEV_PLATFORM,
 	.dev = {
 		.platform_data = rtgalaxy_serial_data,
-	},
+		},
 };
 
 static void __init rtgalaxy_register_uart(void)
@@ -52,7 +52,7 @@ static void __init rtgalaxy_register_uart(void)
 		rtgalaxy_serial_data[n].iobase = RTGALAXY_UART0_BASE;
 		rtgalaxy_serial_data[n].membase =
 		    (unsigned char __iomem *)KSEG1ADDR(RTGALAXY_REG_BASE +
-							RTGALAXY_UART0_BASE);
+						       RTGALAXY_UART0_BASE);
 		rtgalaxy_serial_data[n].mapbase =
 		    RTGALAXY_REG_BASE + RTGALAXY_UART0_BASE;
 		rtgalaxy_serial_data[n].irq = RTGALAXY_IRQ_UART0;
@@ -69,7 +69,7 @@ static void __init rtgalaxy_register_uart(void)
 		rtgalaxy_serial_data[n].iobase = RTGALAXY_UART1_BASE;
 		rtgalaxy_serial_data[n].membase =
 		    (unsigned char __iomem *)KSEG1ADDR(RTGALAXY_REG_BASE +
-							RTGALAXY_UART1_BASE);
+						       RTGALAXY_UART1_BASE);
 		rtgalaxy_serial_data[n].mapbase =
 		    RTGALAXY_REG_BASE + RTGALAXY_UART1_BASE;
 		rtgalaxy_serial_data[n].irq = RTGALAXY_IRQ_UART1;

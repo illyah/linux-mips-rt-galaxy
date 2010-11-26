@@ -81,7 +81,7 @@ void __init prom_init_cmdline(void)
 	char *cp;
 	int actr;
 
-	actr = 1;               /* Always ignore argv[0] */
+	actr = 1;		/* Always ignore argv[0] */
 
 	cp = &(arcs_cmdline[0]);
 	while (actr < prom_argc) {
@@ -107,7 +107,7 @@ static void __init mips_nmi_setup(void)
 	void *base;
 #if defined(CONFIG_CPU_MIPS32_R1)
 	base = cpu_has_veic ?
-	  (void *)(CAC_BASE + 0xa80) : (void *)(CAC_BASE + 0x380);
+	    (void *)(CAC_BASE + 0xa80) : (void *)(CAC_BASE + 0x380);
 #elif defined(CONFIG_CPU_MIPS32_R2)
 	base = (void *)0xbfc00000;
 #else
@@ -120,7 +120,7 @@ static void __init mips_ejtag_setup(void)
 	void *base;
 #if defined(CONFIG_CPU_MIPS32_R1)
 	base = cpu_has_veic ?
-	  (void *)(CAC_BASE + 0xa00) : (void *)(CAC_BASE + 0x300);
+	    (void *)(CAC_BASE + 0xa00) : (void *)(CAC_BASE + 0x300);
 #elif defined(CONFIG_CPU_MIPS32_R2)
 	base = (void *)0xbfc00480;
 #else
@@ -148,10 +148,12 @@ void __init rtgalaxy_env_get_bootrev(void)
 		else
 			rtgalaxy_board_info->cpu_id = (v1 & 0xff00) >> 8;
 #ifdef DEBUG
-		printk(
-		    "bootrev = '%s' => company_id = %04x, cpu_id = %02x, board_id = %08x\n",
-		    rtgalaxy_board_info->bootrev, rtgalaxy_board_info->company_id,
-		    rtgalaxy_board_info->cpu_id, rtgalaxy_board_info->board_id);
+		printk
+		    ("bootrev = '%s' => company_id = %04x, cpu_id = %02x, board_id = %08x\n",
+		     rtgalaxy_board_info->bootrev,
+		     rtgalaxy_board_info->company_id,
+		     rtgalaxy_board_info->cpu_id,
+		     rtgalaxy_board_info->board_id);
 #endif
 	}
 }

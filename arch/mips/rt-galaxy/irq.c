@@ -128,11 +128,10 @@ void __init arch_init_irq(void)
 
 	for (i = 0; i < 32; ++i)
 		set_irq_chip_and_handler(RTGALAXY_INTERNAL_IRQ_BASE + i,
-					&rtgalaxy_internal_irq_chip,
-					handle_level_irq);
+					 &rtgalaxy_internal_irq_chip,
+					 handle_level_irq);
 
 	set_c0_status(1 << (RTGALAXY_IRQ_MISC + 8));
 
 	rtgalaxy_sb2_setup();
 }
-

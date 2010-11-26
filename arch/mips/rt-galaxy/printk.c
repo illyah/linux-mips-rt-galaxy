@@ -18,8 +18,8 @@ static void __init wait_xfered(void)
 	do {
 		val = inl(RTGALAXY_UART_U0LSR);
 		if ((val & (UART_LSR_TEMT | UART_LSR_THRE)) ==
-		  (UART_LSR_TEMT | UART_LSR_THRE))
-		break;
+		    (UART_LSR_TEMT | UART_LSR_THRE))
+			break;
 	} while (1);
 }
 
