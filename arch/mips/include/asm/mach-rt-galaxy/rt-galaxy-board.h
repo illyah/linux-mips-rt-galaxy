@@ -50,6 +50,7 @@ struct rtgalaxy_board_info {
 	u8 cpu_id;
 	u8 chip_rev;
 	u16 chip_id;
+	char ethaddr[6];
 };
 
 extern struct rtgalaxy_board_info rtgalaxy_info;

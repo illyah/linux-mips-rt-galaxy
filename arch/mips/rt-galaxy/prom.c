@@ -200,6 +200,53 @@ void __init rtgalaxy_env_get_modetty(int tty)
 	}
 }
 
+static inline unsigned char str2hexnum(unsigned char c)
+{
+	if (c >= '0' && c <= '9')
+		return c - '0';
+	if (c >= 'a' && c <= 'f')
+		return c - 'a' + 10;
+	if (c >= 'A' && c <= 'F')
+		return c - 'A' + 10;
+	return 0;		/* foo */
+}
+
+static inline void str2eaddr(unsigned char *ea, unsigned char *str)
+{
+	int i;
+
+	for (i = 0; i < 6; i++) {
+		unsigned char num;
+
+		if ((*str == '.') || (*str == ':'))
+			str++;
+		num = str2hexnum(*str++) << 4;
+		num |= (str2hexnum(*str++));
+		ea[i] = num;
+	}
+}
+
+void __init rtgalaxy_env_get_ethaddr(void)
+{
+	char *s;
+	int i;
+
+	s = prom_getenv("ethaddr");
+	if (!s) {
+		printk("ethaddr not set in boot prom, using default\n");
+		str2eaddr(rtgalaxy_info.ethaddr, "00:01:ca:fe:ba:be");
+		return;
+	}
+	str2eaddr(rtgalaxy_info.ethaddr, s);
+
+	pr_info("Config ether addr: ");
+	for (i = 0; i < 5; i++)
+		printk("%02x:", (unsigned char)rtgalaxy_info.ethaddr[i]);
+	printk("%02x\n", (unsigned char)rtgalaxy_info.ethaddr[i]);
+
+	return;
+}
+
 void __init prom_init(void)
 {
 	prom_argc = fw_arg0;
@@ -211,10 +258,11 @@ void __init prom_init(void)
 	board_ejtag_handler_setup = mips_ejtag_setup;
 
 	rtgalaxy_info.memory_size = _prom_memsize;
-	rtgalaxy_env_get_bootrev();
 
+	rtgalaxy_env_get_bootrev();
 	rtgalaxy_env_get_modetty(0);
 	rtgalaxy_env_get_modetty(1);
+	rtgalaxy_env_get_ethaddr();
 
 	rtgalaxy_detect_soc();
 
