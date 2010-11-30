@@ -33,6 +33,11 @@ struct rtgalaxy_board {
 	void (*machine_restart) (char *);
 	void (*machine_halt) (void);
 	void (*machine_poweroff) (void);
+};
+
+struct rtgalaxy_board_info {
+	enum rtgalaxy_board_type board_type;
+	struct rtgalaxy_board *board;
 
 	/*
 	 * Autodetected / PROM values
@@ -47,6 +52,6 @@ struct rtgalaxy_board {
 	u16 chip_id;
 };
 
-extern struct rtgalaxy_board *rtgalaxy_board_info;
+extern struct rtgalaxy_board_info rtgalaxy_info;
 
 #endif

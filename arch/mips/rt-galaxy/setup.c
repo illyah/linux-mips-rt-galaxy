@@ -162,7 +162,7 @@ static int panic_handler(struct notifier_block *notifier_block,
 
 const char *get_system_type(void)
 {
-	return rtgalaxy_board_info->name;
+	return rtgalaxy_info.board->name;
 }
 
 void __init plat_mem_setup(void)
@@ -170,9 +170,9 @@ void __init plat_mem_setup(void)
 	panic_on_oops = 1;
 	register_panic_notifier();
 
-	_machine_restart = rtgalaxy_board_info->machine_restart;
-	_machine_halt = rtgalaxy_board_info->machine_halt;
-	pm_power_off = rtgalaxy_board_info->machine_poweroff;
-
 	rtgalaxy_board_setup();
+
+	_machine_restart = rtgalaxy_info.board->machine_restart;
+	_machine_halt = rtgalaxy_info.board->machine_halt;
+	pm_power_off = rtgalaxy_info.board->machine_poweroff;
 }

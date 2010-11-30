@@ -18,22 +18,22 @@
 
 static inline int rtgalaxy_is_venus_soc(void)
 {
-	return (rtgalaxy_board_info->chip_id == RTGALAXY_CHIPID_VENUS);
+	return (rtgalaxy_info.chip_id == RTGALAXY_CHIPID_VENUS);
 }
 
 static inline int rtgalaxy_is_neptune_soc(void)
 {
-	return (rtgalaxy_board_info->chip_id == RTGALAXY_CHIPID_NEPTUNE);
+	return (rtgalaxy_info.chip_id == RTGALAXY_CHIPID_NEPTUNE);
 }
 
 static inline int rtgalaxy_is_mars_soc(void)
 {
-	return (rtgalaxy_board_info->chip_id == RTGALAXY_CHIPID_MARS);
+	return (rtgalaxy_info.chip_id == RTGALAXY_CHIPID_MARS);
 }
 
 static inline int rtgalaxy_is_jupiter_soc(void)
 {
-	return (rtgalaxy_board_info->chip_id == RTGALAXY_CHIPID_JUPITER);
+	return (rtgalaxy_info.chip_id == RTGALAXY_CHIPID_JUPITER);
 }
 
 #endif

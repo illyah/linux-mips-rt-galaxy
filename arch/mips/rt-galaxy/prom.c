@@ -135,25 +135,25 @@ void __init rtgalaxy_env_get_bootrev(void)
 
 	envp = prom_getenv("bootrev");
 	if (envp) {
-		strcpy(rtgalaxy_board_info->bootrev, envp);
+		strcpy(rtgalaxy_info.bootrev, envp);
 		sscanf(envp, "%hx.%hx.%hx", &v0, &v1, &v2);
 
-		rtgalaxy_board_info->company_id = v0;
-		rtgalaxy_board_info->board_id = (v0 << 16) | v1;
+		rtgalaxy_info.company_id = v0;
+		rtgalaxy_info.board_id = (v0 << 16) | v1;
 
 		/* old bootrev format : aa.bb.ccc */
 		/* new bootrev format : aaaa.bbbb.cccc */
 		if (envp[2] == '.')
-			rtgalaxy_board_info->cpu_id = (v1 & 0xf0) >> 4;
+			rtgalaxy_info.cpu_id = (v1 & 0xf0) >> 4;
 		else
-			rtgalaxy_board_info->cpu_id = (v1 & 0xff00) >> 8;
+			rtgalaxy_info.cpu_id = (v1 & 0xff00) >> 8;
 #ifdef DEBUG
 		printk
 		    ("bootrev = '%s' => company_id = %04x, cpu_id = %02x, board_id = %08x\n",
-		     rtgalaxy_board_info->bootrev,
-		     rtgalaxy_board_info->company_id,
-		     rtgalaxy_board_info->cpu_id,
-		     rtgalaxy_board_info->board_id);
+		     rtgalaxy_info.bootrev,
+		     rtgalaxy_info.company_id,
+		     rtgalaxy_info.cpu_id,
+		     rtgalaxy_info.board_id);
 #endif
 	}
 }
@@ -168,11 +168,11 @@ void __init prom_init(void)
 	board_nmi_handler_setup = mips_nmi_setup;
 	board_ejtag_handler_setup = mips_ejtag_setup;
 
-	rtgalaxy_board_info->memory_size = _prom_memsize;
+	set_io_port_base(KSEG1ADDR(RTGALAXY_REG_BASE));
 
+	rtgalaxy_info.memory_size = _prom_memsize;
 	rtgalaxy_env_get_bootrev();
 
-	set_io_port_base(KSEG1ADDR(RTGALAXY_REG_BASE));
 	rtgalaxy_detect_soc();
 
 	platform_init();

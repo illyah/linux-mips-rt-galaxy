@@ -13,9 +13,9 @@
 #include <rt-galaxy-soc.h>
 #include <rt-galaxy-io.h>
 
-struct rtgalaxy_board *rtgalaxy_board_info;
+struct rtgalaxy_board_info rtgalaxy_info;
 
-static struct rtgalaxy_board rtgalaxy_em7080_info = {
+static struct rtgalaxy_board rtgalaxy_em7080_board = {
 	.name = "em7080",
 	.ext_freq = 27000000,
 	.has_eth0 = 1,
@@ -64,7 +64,7 @@ static void rtgalaxy_common_machine_halt(void)
 
 static const char *rtgalaxy_get_soc_name(void)
 {
-	switch (rtgalaxy_board_info->chip_id) {
+	switch (rtgalaxy_info.chip_id) {
 	case RTGALAXY_CHIPID_VENUS:
 		return "Venus";
 	case RTGALAXY_CHIPID_NEPTUNE:
@@ -84,12 +84,12 @@ void rtgalaxy_detect_soc(void)
 	id = inl(RTGALAXY_SB2_CHIP_ID);
 	rev = inl(RTGALAXY_SB2_CHIP_INFO);
 
-	rtgalaxy_board_info->chip_id = id & 0xffff;
-	rtgalaxy_board_info->chip_rev = (id >> 16) & 0xffff;
+	rtgalaxy_info.chip_id = id & 0xffff;
+	rtgalaxy_info.chip_rev = (id >> 16) & 0xffff;
 
 	printk("Detected rtd%04x rev %x SoC (%s)\n",
-	       rtgalaxy_board_info->chip_id,
-	       rtgalaxy_board_info->chip_rev, rtgalaxy_get_soc_name());
+	       rtgalaxy_info.chip_id,
+	       rtgalaxy_info.chip_rev, rtgalaxy_get_soc_name());
 }
 
 /*
@@ -109,29 +109,30 @@ static enum rtgalaxy_board_type rtgalaxy_detect_board(void)
 
 void rtgalaxy_board_setup(void)
 {
-	switch (rtgalaxy_detect_board()) {
+	rtgalaxy_info.board_type = rtgalaxy_detect_board();
+	switch (rtgalaxy_info.board_type) {
 	case RTGALAXY_BOARD_EM7080:
-		rtgalaxy_board_info = &rtgalaxy_em7080_info;
+		rtgalaxy_info.board = &rtgalaxy_em7080_board;
 		break;
 	default:
 		/* unknown rt-galaxy board */
 		BUG();
 	}
 
-	if (rtgalaxy_board_info->machine_restart == NULL) {
-		rtgalaxy_board_info->machine_restart =
+	if (rtgalaxy_info.board->machine_restart == NULL) {
+		rtgalaxy_info.board->machine_restart =
 		    rtgalaxy_common_machine_restart;
 	}
 
-	if (rtgalaxy_board_info->machine_halt == NULL) {
-		rtgalaxy_board_info->machine_halt =
+	if (rtgalaxy_info.board->machine_halt == NULL) {
+		rtgalaxy_info.board->machine_halt =
 		    rtgalaxy_common_machine_halt;
 	}
 
-	if (rtgalaxy_board_info->machine_poweroff == NULL) {
-		rtgalaxy_board_info->machine_poweroff =
+	if (rtgalaxy_info.board->machine_poweroff == NULL) {
+		rtgalaxy_info.board->machine_poweroff =
 		    rtgalaxy_common_machine_halt;
 	}
 
-	printk("Detected %s board\n", rtgalaxy_board_info->name);
+	printk("Detected %s board (type=%d)\n", rtgalaxy_info.board->name, rtgalaxy_info.board_type);
 }

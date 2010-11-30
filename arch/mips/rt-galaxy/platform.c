@@ -48,7 +48,7 @@ static void __init rtgalaxy_register_uart(void)
 {
 	int n = 0;
 
-	if (rtgalaxy_board_info->has_uart0) {
+	if (rtgalaxy_info.board->has_uart0) {
 		rtgalaxy_serial_data[n].iobase = RTGALAXY_UART0_BASE;
 		rtgalaxy_serial_data[n].membase =
 		    (unsigned char __iomem *)KSEG1ADDR(RTGALAXY_REG_BASE +
@@ -56,7 +56,7 @@ static void __init rtgalaxy_register_uart(void)
 		rtgalaxy_serial_data[n].mapbase =
 		    RTGALAXY_REG_BASE + RTGALAXY_UART0_BASE;
 		rtgalaxy_serial_data[n].irq = RTGALAXY_IRQ_UART0;
-		rtgalaxy_serial_data[1].uartclk = rtgalaxy_board_info->ext_freq;
+		rtgalaxy_serial_data[1].uartclk = rtgalaxy_info.board->ext_freq;
 		rtgalaxy_serial_data[n].iotype = UPIO_MEM;
 		rtgalaxy_serial_data[n].flags = UPF_BOOT_AUTOCONF;
 		rtgalaxy_serial_data[n].regshift = 2;
@@ -65,7 +65,7 @@ static void __init rtgalaxy_register_uart(void)
 		n++;
 	}
 
-	if (rtgalaxy_board_info->has_uart1) {
+	if (rtgalaxy_info.board->has_uart1) {
 		rtgalaxy_serial_data[n].iobase = RTGALAXY_UART1_BASE;
 		rtgalaxy_serial_data[n].membase =
 		    (unsigned char __iomem *)KSEG1ADDR(RTGALAXY_REG_BASE +
@@ -73,7 +73,7 @@ static void __init rtgalaxy_register_uart(void)
 		rtgalaxy_serial_data[n].mapbase =
 		    RTGALAXY_REG_BASE + RTGALAXY_UART1_BASE;
 		rtgalaxy_serial_data[n].irq = RTGALAXY_IRQ_UART1;
-		rtgalaxy_serial_data[0].uartclk = rtgalaxy_board_info->ext_freq;
+		rtgalaxy_serial_data[0].uartclk = rtgalaxy_info.board->ext_freq;
 		rtgalaxy_serial_data[n].iotype = UPIO_MEM;
 		rtgalaxy_serial_data[n].flags = UPF_BOOT_AUTOCONF;
 		rtgalaxy_serial_data[n].regshift = 2;

@@ -45,7 +45,7 @@ static unsigned int __init estimate_cpu_frequency(void)
 	write_c0_count(0);
 
 	while (inl(RTGALAXY_TIMR_TC2CVR) <
-	       (rtgalaxy_board_info->ext_freq / HZ)) ;
+	       (rtgalaxy_info.board->ext_freq / HZ)) ;
 
 	count = read_c0_count();
 
