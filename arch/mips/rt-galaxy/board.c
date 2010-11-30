@@ -48,7 +48,7 @@ static void rtgalaxy_common_machine_restart(char *cmd)
 	/*
 	 * TODO: Find a way to reset the SoC
 	 */
-	outl(0x0, RTGALAXY_TIMR_TCWCR);
+	rtgalaxy_reg_writel(0x0, RTGALAXY_TIMR_TCWCR);
 #endif
 	while (1) ;
 }
@@ -81,8 +81,8 @@ void rtgalaxy_detect_soc(void)
 {
 	u32 id, rev;
 
-	id = inl(RTGALAXY_SB2_CHIP_ID);
-	rev = inl(RTGALAXY_SB2_CHIP_INFO);
+	id = rtgalaxy_reg_readl(RTGALAXY_SB2_CHIP_ID);
+	rev = rtgalaxy_reg_readl(RTGALAXY_SB2_CHIP_INFO);
 
 	rtgalaxy_info.chip_id = id & 0xffff;
 	rtgalaxy_info.chip_rev = (id >> 16) & 0xffff;

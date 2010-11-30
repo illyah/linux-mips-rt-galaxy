@@ -23,7 +23,7 @@ static int rtgalaxy_internal_irq_dispatch(void)
 	u32 pending;
 	static int i;
 
-	pending = inl(RTGALAXY_MISC_ISR);
+	pending = rtgalaxy_reg_readl(RTGALAXY_MISC_ISR);
 
 	if (!pending)
 		return 0;
@@ -68,9 +68,9 @@ static inline void rtgalaxy_internal_irq_mask(unsigned int irq)
 	u32 mask;
 
 	irq -= RTGALAXY_INTERNAL_IRQ_BASE;
-	mask = inl(RTGALAXY_MISC_UMSK_ISR);
+	mask = rtgalaxy_reg_readl(RTGALAXY_MISC_UMSK_ISR);
 	mask &= ~(1 << irq);
-	outl(mask, RTGALAXY_MISC_UMSK_ISR);
+	rtgalaxy_reg_writel(mask, RTGALAXY_MISC_UMSK_ISR);
 #endif
 }
 
@@ -80,16 +80,16 @@ static void rtgalaxy_internal_irq_unmask(unsigned int irq)
 	u32 mask;
 
 	irq -= RTGALAXY_INTERNAL_IRQ_BASE;
-	mask = inl(RTGALAXY_MISC_UMSK_ISR);
+	mask = rtgalaxy_reg_readl(RTGALAXY_MISC_UMSK_ISR);
 	mask |= (1 << irq);
-	outl(mask, RTGALAXY__MISC_UMSK_ISR);
+	rtgalaxy_reg_writel(mask, RTGALAXY__MISC_UMSK_ISR);
 #endif
 }
 
 static void rtgalaxy_internal_irq_ack(unsigned int irq)
 {
 	irq -= RTGALAXY_INTERNAL_IRQ_BASE;
-	outl((1 << irq), RTGALAXY_MISC_ISR);
+	rtgalaxy_reg_writel((1 << irq), RTGALAXY_MISC_ISR);
 }
 
 static void rtgalaxy_internal_irq_mask_ack(unsigned int irq)
@@ -119,10 +119,10 @@ void __init arch_init_irq(void)
 	int i;
 
 	/* disable RTC interrupts */
-	outl(0x0000, RTGALAXY_RTC_CR);
+	rtgalaxy_reg_writel(0x0000, RTGALAXY_RTC_CR);
 
 	/* clear device interrupts */
-	outl(0x3ffc, RTGALAXY_MISC_ISR);
+	rtgalaxy_reg_writel(0x3ffc, RTGALAXY_MISC_ISR);
 
 	mips_cpu_irq_init();
 

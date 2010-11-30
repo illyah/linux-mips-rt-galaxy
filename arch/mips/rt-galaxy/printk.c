@@ -16,7 +16,7 @@ static void __init wait_xfered(void)
 
 	/* wait for any previous char to be transmitted */
 	do {
-		val = inl(RTGALAXY_UART_U0LSR);
+		val = rtgalaxy_reg_readl(RTGALAXY_UART_U0LSR);
 		if ((val & (UART_LSR_TEMT | UART_LSR_THRE)) ==
 		    (UART_LSR_TEMT | UART_LSR_THRE))
 			break;
@@ -26,5 +26,5 @@ static void __init wait_xfered(void)
 void __init prom_putchar(char c)
 {
 	wait_xfered();
-	outl(c, RTGALAXY_UART_U0RBR_THR_DLL);
+	rtgalaxy_reg_writel(c, RTGALAXY_UART_U0RBR_THR_DLL);
 }

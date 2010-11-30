@@ -15,7 +15,7 @@ static irqreturn_t rtgalaxy_sb2_irq_handler(int irq, void *dev_id)
 {
 	unsigned int addr;
 
-	if (!(inl(RTGALAXY_SB2_INV_INTSTAT) & 0x2))
+	if (!(rtgalaxy_reg_readl(RTGALAXY_SB2_INV_INTSTAT) & 0x2))
 		return IRQ_NONE;
 
 	/*
@@ -23,11 +23,11 @@ static irqreturn_t rtgalaxy_sb2_irq_handler(int irq, void *dev_id)
 	 * specific memory regions. This patch should circumvent
 	 * this bug.
 	 */
-	addr = inl(RTGALAXY_SB2_INV_ADDR);
+	addr = rtgalaxy_reg_readl(RTGALAXY_SB2_INV_ADDR);
 	if (addr > 0x8001000 && ((addr & 0xfffff000) != 0x1800c000)) {
 		printk("Access to invalid hw address 0x%x\n", addr);
 	}
-	outl(0xE, RTGALAXY_SB2_INV_INTSTAT);
+	rtgalaxy_reg_writel(0xE, RTGALAXY_SB2_INV_INTSTAT);
 
 	return IRQ_HANDLED;
 }
@@ -40,7 +40,7 @@ static struct irqaction rtgalaxy_sb2_irq_action = {
 
 void __init rtgalaxy_sb2_setup(void)
 {
-	outl(0x3, RTGALAXY_SB2_INV_INTEN);
-	outl(0xe, RTGALAXY_SB2_INV_INTSTAT);
+	rtgalaxy_reg_writel(0x3, RTGALAXY_SB2_INV_INTEN);
+	rtgalaxy_reg_writel(0xe, RTGALAXY_SB2_INV_INTSTAT);
 	setup_irq(RTGALAXY_IRQ_SB2, &rtgalaxy_sb2_irq_action);
 }

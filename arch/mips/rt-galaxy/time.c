@@ -39,18 +39,18 @@ static unsigned int __init estimate_cpu_frequency(void)
 
 	cause = read_c0_cause();
 	write_c0_cause(cause & ~0x08000000);
-	outl(0, RTGALAXY_TIMR_TC2CR);
-	outl(0x80000000, RTGALAXY_TIMR_TC2CR);
+	rtgalaxy_reg_writel(0, RTGALAXY_TIMR_TC2CR);
+	rtgalaxy_reg_writel(0x80000000, RTGALAXY_TIMR_TC2CR);
 
 	write_c0_count(0);
 
-	while (inl(RTGALAXY_TIMR_TC2CVR) <
+	while (rtgalaxy_reg_readl(RTGALAXY_TIMR_TC2CVR) <
 	       (rtgalaxy_info.board->ext_freq / HZ)) ;
 
 	count = read_c0_count();
 
 	write_c0_cause(cause);
-	outl(0, RTGALAXY_TIMR_TC2CR);
+	rtgalaxy_reg_writel(0, RTGALAXY_TIMR_TC2CR);
 
 	local_irq_restore(flags);
 

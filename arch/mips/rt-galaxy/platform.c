@@ -21,13 +21,13 @@
 static unsigned int rtgalaxy_serial_in(struct uart_port *p, int offset)
 {
 	offset <<= p->regshift;
-	return readl(p->membase + offset) & 0xff;
+	return rtgalaxy_reg_readl(p->iobase + offset) & 0xff;
 }
 
 static void rtgalaxy_serial_out(struct uart_port *p, int offset, int value)
 {
 	offset <<= p->regshift;
-	writel(value & 0xff, p->membase + offset);
+	rtgalaxy_reg_writel(value & 0xff, p->iobase + offset);
 }
 
 static struct plat_serial8250_port rtgalaxy_serial_data[] = {
@@ -53,10 +53,10 @@ static void __init rtgalaxy_register_uart(void)
 		rtgalaxy_serial_data[n].membase =
 		    (unsigned char __iomem *)KSEG1ADDR(RTGALAXY_REG_BASE +
 						       RTGALAXY_UART0_BASE);
-		rtgalaxy_serial_data[n].mapbase =
-		    RTGALAXY_REG_BASE + RTGALAXY_UART0_BASE;
+		rtgalaxy_serial_data[n].mapbase = RTGALAXY_REG_BASE +
+		    RTGALAXY_UART0_BASE;
 		rtgalaxy_serial_data[n].irq = RTGALAXY_IRQ_UART0;
-		rtgalaxy_serial_data[1].uartclk = rtgalaxy_info.board->ext_freq;
+		rtgalaxy_serial_data[n].uartclk = rtgalaxy_info.board->ext_freq;
 		rtgalaxy_serial_data[n].iotype = UPIO_MEM;
 		rtgalaxy_serial_data[n].flags = UPF_BOOT_AUTOCONF;
 		rtgalaxy_serial_data[n].regshift = 2;
@@ -70,10 +70,10 @@ static void __init rtgalaxy_register_uart(void)
 		rtgalaxy_serial_data[n].membase =
 		    (unsigned char __iomem *)KSEG1ADDR(RTGALAXY_REG_BASE +
 						       RTGALAXY_UART1_BASE);
-		rtgalaxy_serial_data[n].mapbase =
-		    RTGALAXY_REG_BASE + RTGALAXY_UART1_BASE;
+		rtgalaxy_serial_data[n].mapbase = RTGALAXY_REG_BASE +
+		    RTGALAXY_UART1_BASE;
 		rtgalaxy_serial_data[n].irq = RTGALAXY_IRQ_UART1;
-		rtgalaxy_serial_data[0].uartclk = rtgalaxy_info.board->ext_freq;
+		rtgalaxy_serial_data[n].uartclk = rtgalaxy_info.board->ext_freq;
 		rtgalaxy_serial_data[n].iotype = UPIO_MEM;
 		rtgalaxy_serial_data[n].flags = UPF_BOOT_AUTOCONF;
 		rtgalaxy_serial_data[n].regshift = 2;

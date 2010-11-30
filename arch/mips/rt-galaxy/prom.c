@@ -167,7 +167,7 @@ void __init prom_init(void)
 	board_nmi_handler_setup = mips_nmi_setup;
 	board_ejtag_handler_setup = mips_ejtag_setup;
 
-	set_io_port_base(KSEG1ADDR(RTGALAXY_REG_BASE));
+//	set_io_port_base(KSEG1ADDR(RTGALAXY_REG_BASE));
 
 	rtgalaxy_info.memory_size = _prom_memsize;
 	rtgalaxy_env_get_bootrev();

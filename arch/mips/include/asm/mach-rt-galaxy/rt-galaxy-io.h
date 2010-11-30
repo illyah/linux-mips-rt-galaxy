@@ -9,9 +9,9 @@
 #define _RTGALAXY_IO_H_
 
 /*
- * Internal registers are accessed through KSEG3
+ * Internal registers are accessed through KSEG1
  */
-#define RTGALAXY_REGS_VA(x)		((void __iomem *)(x))
+#define RTGALAXY_REGS_VA(x)		((void __iomem *)(KSEG1ADDR(x)))
 
 #define rtgalaxy_readb(a)		(*(volatile unsigned char  *) RTGALAXY_REGS_VA(a))
 #define rtgalaxy_readw(a)		(*(volatile unsigned short *) RTGALAXY_REGS_VA(a))
