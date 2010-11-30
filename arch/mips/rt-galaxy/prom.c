@@ -157,6 +157,49 @@ void __init rtgalaxy_env_get_bootrev(void)
 	}
 }
 
+void __init rtgalaxy_env_get_modetty(int tty)
+{
+	char console_string[40];
+	char param[16];
+	int baud = 0;
+	char parity = '\0', bits = '\0', flow = '\0';
+	char *s;
+
+	sprintf(param, "console=ttyS%d", tty);
+	if ((strstr(prom_getcmdline(), param)) == NULL) {
+		sprintf(param, "modetty%d", tty);
+		s = prom_getenv(param);
+		if (s) {
+			while (*s >= '0' && *s <= '9')
+				baud = baud * 10 + *s++ - '0';
+			if (*s == ',')
+				s++;
+			if (*s)
+				parity = *s++;
+			if (*s == ',')
+				s++;
+			if (*s)
+				bits = *s++;
+			if (*s == ',')
+				s++;
+			if (*s == 'h')
+				flow = 'r';
+		}
+		if (baud == 0)
+			baud = 115200;
+		if (parity != 'n' && parity != 'o' && parity != 'e')
+			parity = 'n';
+		if (bits != '7' && bits != '8')
+			bits = '8';
+		if (flow == '\0')
+			flow = 'r';
+		sprintf(console_string, " console=ttyS%d,%d%c%c%c", tty, baud,
+			parity, bits, flow);
+		strcat(prom_getcmdline(), console_string);
+		pr_info("Config serial console:%s\n", console_string);
+	}
+}
+
 void __init prom_init(void)
 {
 	prom_argc = fw_arg0;
@@ -169,6 +212,9 @@ void __init prom_init(void)
 
 	rtgalaxy_info.memory_size = _prom_memsize;
 	rtgalaxy_env_get_bootrev();
+
+	rtgalaxy_env_get_modetty(0);
+	rtgalaxy_env_get_modetty(1);
 
 	rtgalaxy_detect_soc();
 
