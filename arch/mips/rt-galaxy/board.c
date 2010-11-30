@@ -134,5 +134,6 @@ void rtgalaxy_board_setup(void)
 		    rtgalaxy_common_machine_halt;
 	}
 
-	printk("Detected %s board (type=%d)\n", rtgalaxy_info.board->name, rtgalaxy_info.board_type);
+	printk("Detected %s board (type=%d)\n", rtgalaxy_info.board->name,
+	       rtgalaxy_info.board_type);
 }

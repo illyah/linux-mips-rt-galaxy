@@ -152,8 +152,7 @@ void __init rtgalaxy_env_get_bootrev(void)
 		    ("bootrev = '%s' => company_id = %04x, cpu_id = %02x, board_id = %08x\n",
 		     rtgalaxy_info.bootrev,
 		     rtgalaxy_info.company_id,
-		     rtgalaxy_info.cpu_id,
-		     rtgalaxy_info.board_id);
+		     rtgalaxy_info.cpu_id, rtgalaxy_info.board_id);
 #endif
 	}
 }
