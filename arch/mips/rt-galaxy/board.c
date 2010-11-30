@@ -98,6 +98,14 @@ void rtgalaxy_detect_soc(void)
 
 static enum rtgalaxy_board_type rtgalaxy_detect_board(void)
 {
+	/* 
+	 * EM7080 prom env:   HM1=EGREAT HM2=EMT HM3=1005
+	 *                    memsize=0x08000000 usb_otg=off otg_gpio=0 
+	 *                    12V5V_GPIO=44,hion POWERKEY_IRRP=0xF30C6B86
+	 *
+	 * Xtreamer prom env: memsize=0x10000000 usb_otg=off otg_gpio=0 
+	 *                    12V5V_GPIO=44,hion 
+	 */
 	return RTGALAXY_BOARD_EM7080;
 
 	/*
