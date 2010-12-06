@@ -5,14 +5,6 @@
  *
  */
 
-#if 0
-#define RGE_DEBUG(fmt,...)	printk(">>>> %s :: " fmt, __FUNCTION__, ## __VA_ARGS__) 
-#define RGE_PRINT(fmt,...)	printk(fmt, __FUNCTION__, ## __VA_ARGS__) 
-#else
-#define RGE_DEBUG(fmt,...)	do { } while(0)
-#define RGE_PRINT(fmt,...)	do { } while(0)
-#endif
-
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #define DRV_NAME		"rtgalaxy-eth"
@@ -88,7 +80,6 @@ MODULE_PARM_DESC(multicast_filter_limit,
 #define RGE_TX_RING_SIZE	32
 
 #define DESC_ALIGN		0x100
-#define KSEG_MASK		0xe0000000
 
 #define RGE_RXRING_BYTES	((sizeof(struct rge_desc) * (RGE_RX_RING_SIZE+1)) + DESC_ALIGN)
 #define RGE_TXRING_BYTES	((sizeof(struct rge_desc) * (RGE_TX_RING_SIZE+1)) + DESC_ALIGN)
@@ -298,7 +289,10 @@ enum {
 	TxFifo = 1,
 	TxMIT = 4,
 	TxPoll = (1 << 0),
-	CmdConfig = 0x3c | (RxMIT << 8) | (RxFifo << 11) | (RxTimer << 13) | (TxMIT << 16) | (TxFifo << 19),
+	CmdConfig =
+	    0x3c | (RxMIT << 8) | (RxFifo << 11) | (RxTimer << 13) | (TxMIT <<
+								      16) |
+	    (TxFifo << 19),
 
 	/*
 	 * MiiAccess flags
@@ -395,7 +389,8 @@ static void rge_init_rings_index(struct rge_private *priv);
 static int rge_init_rings(struct rge_private *priv);
 static inline void rge_start_hw(struct rge_private *priv);
 static int rge_mdio_read(struct net_device *dev, int phy_id, int location);
-static void rge_mdio_write(struct net_device *dev, int phy_id, int location, int value);
+static void rge_mdio_write(struct net_device *dev, int phy_id, int location,
+			   int value);
 
 static struct {
 	const char str[ETH_GSTRING_LEN];
@@ -438,8 +433,6 @@ static inline void rge_set_rxbufsize(struct rge_private *priv)
 {
 	unsigned int mtu = priv->dev->mtu;
 
-	RGE_DEBUG("enter\n");
-
 	if (mtu > ETH_DATA_LEN)
 		/* MTU + ethernet header + FCS + optional VLAN tag */
 		priv->rx_buf_sz = mtu + ETH_HLEN + 8;
@@ -456,19 +449,6 @@ static inline void rge_rx_skb(struct rge_private *priv, struct sk_buff *skb,
 	priv->dev->stats.rx_packets++;
 	priv->dev->stats.rx_bytes += skb->len;
 
-	{
-		int j, i = 0;
-		RGE_DEBUG("skb = %p, .data = %p, len = %d\n", skb, skb->data, skb->len);
-		do {
-			RGE_DEBUG("%04x :: ", (i+j));
-			for(j=0; (i < skb->len) && (j < 32); i++, j++) {
-				RGE_PRINT("%02x", skb->data[i]);
-				if (j%4 == 3) RGE_PRINT(" ");
-			}
-			RGE_PRINT("\n");
-		} while(i < skb->len);
-	}
-
 #if RGE_VLAN_TAG_USED
 	if (priv->vlgrp && (desc->opts2 & RxVlanTagged)) {
 		vlan_hwaccel_receive_skb(skb, priv->vlgrp,
@@ -481,8 +461,6 @@ static inline void rge_rx_skb(struct rge_private *priv, struct sk_buff *skb,
 static void rge_rx_err_acct(struct rge_private *priv, unsigned rx_tail,
 			    u32 status, u32 len)
 {
-	RGE_DEBUG("enter\n");
-
 	netif_dbg(priv, rx_err, priv->dev,
 		  "rx err, slot %d status 0x%x len %d\n", rx_tail, status, len);
 	priv->dev->stats.rx_errors++;
@@ -500,8 +478,6 @@ static inline unsigned int rge_rx_csum_ok(u32 status)
 {
 	unsigned int protocol = (status >> 16) & 0x3;
 
-	RGE_DEBUG("enter\n");
-
 	if (!protocol ||
 	    ((protocol == RxProtoTCP) && !(status & TCPFail)) ||
 	    ((protocol == RxProtoUDP) && !(status & UDPFail)) ||
@@ -517,8 +493,6 @@ static int rge_rx_poll(struct napi_struct *napi, int budget)
 	struct net_device *dev = priv->dev;
 	unsigned int rx_tail = priv->rx_tail;
 	int rx;
-
-	RGE_DEBUG("enter\n");
 
 rx_status_loop:
 	rx = 0;
@@ -541,10 +515,7 @@ rx_status_loop:
 			break;
 
 		len = (status & 0x0fff) - 4;
-		mapping = SKB_PRIVATE(skb,SKB_PRIV_MAPPING);
-
-		RGE_DEBUG("mapping = %08x, len = %d, status = %04x, skb_priv = %08x, skb = %p, desc = %p\n",
-			  mapping, len, status, *(u32*)skb->cb, skb, desc);
+		mapping = SKB_PRIVATE(skb, SKB_PRIV_MAPPING);
 
 		if ((status & (FirstFrag | LastFrag)) != (FirstFrag | LastFrag)) {
 			/* we don't support incoming fragmented frames.
@@ -553,9 +524,6 @@ rx_status_loop:
 			 * that RX fragments are never encountered
 			 */
 
-			RGE_DEBUG("FirstFrag = %d, LastFrag = %d\n",
-				  status & FirstFrag ? 1 : 0, status & LastFrag ? 1 : 0);
-
 			rge_rx_err_acct(priv, rx_tail, status, len);
 			dev->stats.rx_dropped++;
 			priv->rge_stats.rx_frags++;
@@ -563,41 +531,15 @@ rx_status_loop:
 		}
 
 		if (status & RxError) {
-			RGE_DEBUG("RxError = %d\n", status & RxError ? 1 : 0);
-
 			rge_rx_err_acct(priv, rx_tail, status, len);
 			goto rx_next;
 		}
-
-		RGE_DEBUG("skb = %p, .data = %p, .end = %p, .head = %p, .tail = %p, len = %x, rx_offset = %x\n",
-			  skb, skb->data, skb->end, skb->head, skb->tail, len, priv->rx_offset);
-		RGE_DEBUG(".tail + len > .end = %p > %p == %d\n",
-			  skb->tail + len, skb->end, ((skb->tail + len) > skb->end));
-		RGE_DEBUG(".head & 0xff != 0 = %02x != 0 == %d\n",
-			  (u32)skb->head & 0xff, (((u32)skb->head & 0xff) != 0));
-		RGE_DEBUG(".tail & 0xff != %02x = %02x != %02x == %d\n",
-			  0x10+priv->rx_offset, (u32)skb->tail & 0xff, 0x10+priv->rx_offset,
-			  (((u32)skb->tail & 0xff) != (0x10+priv->rx_offset)));
-
-#if 0
-		if (unlikely(((skb->tail + len) > skb->end) ||
-			     (((u32) skb->head & 0xff) != 0) ||
-			     (((u32) skb->tail & 0xff) !=
-			      (0x10 + priv->rx_offset)))) {
-
-			RGE_DEBUG("misaligned skb\n");
-
-			BUG();
-			dev->stats.rx_dropped++;
-			goto rx_next;
-		}
-#endif 
 
 		netif_dbg(priv, rx_status, dev,
 			  "rx slot %d status 0x%x len %d\n", rx_tail, status,
 			  len);
 
-		dma_cache_inv((u32)skb->tail, len);
+		dma_cache_inv((u32) skb->tail, len);
 
 		new_skb = netdev_alloc_skb(dev, buflen);
 		if (!new_skb) {
@@ -619,10 +561,10 @@ rx_status_loop:
 		skb->ip_summed = CHECKSUM_UNNECESSARY;
 		skb_put(skb, len);
 
-		dma_cache_inv((u32)new_skb->tail, priv->rx_buf_sz);
+		dma_cache_inv((u32) new_skb->tail, priv->rx_buf_sz);
 
-		mapping = (u32)new_skb->tail & ~KSEG_MASK;
-		SKB_PRIVATE(new_skb,SKB_PRIV_MAPPING) = mapping;
+		mapping = CPHYSADDR(new_skb->tail);
+		SKB_PRIVATE(new_skb, SKB_PRIV_MAPPING) = mapping;
 
 		priv->rx_skb[rx_tail] = new_skb;
 
@@ -677,9 +619,6 @@ static irqreturn_t rge_interrupt(int irq, void *dev_instance)
 	if (!status || (status == 0xFFFF))
 		return IRQ_NONE;
 
-	RGE_DEBUG("intr, status %04x mask %04x cmd %02x\n",
-		  status, rger16(IntrMask), rger8(Cmd));
-
 	netif_dbg(priv, intr, dev, "intr, status %04x cmd %02x\n",
 		  status, rger8(Cmd));
 
@@ -695,9 +634,6 @@ static irqreturn_t rge_interrupt(int irq, void *dev_instance)
 	}
 
 	if (status & RxFIFOOvr) {
-		RGE_DEBUG("Intr RxFIFOOvr = %d\n",
-			  status & RxFIFOOvr ? 1 : 0);
-
 		local_irq_disable();
 
 		rgew16_f(IntrMask, 0);
@@ -719,11 +655,6 @@ static irqreturn_t rge_interrupt(int irq, void *dev_instance)
 	}
 
 	if (status & (RxOK | RxErr | RxEmpty)) {
-		RGE_DEBUG("Intr RxOK = %d, RxErr = %d, RxEmpty = %d\n",
-			  status & RxOK ? 1 : 0, 
-			  status & RxErr ? 1 : 0, 
-			  status & RxEmpty ? 1 : 0);
-
 		if (napi_schedule_prep(&priv->napi)) {
 			rgew16_f(IntrMask, rge_norx_intr_mask);
 			__napi_schedule(&priv->napi);
@@ -731,18 +662,10 @@ static irqreturn_t rge_interrupt(int irq, void *dev_instance)
 	}
 
 	if (status & (TxOK | TxErr | TxEmpty | SwInt)) {
-		RGE_DEBUG("Intr TxOK = %d, TxErr = %d, TxEmpty = %d, SwInt = %d\n",
-			  status & TxOK ? 1 : 0, 
-			  status & TxErr ? 1 : 0, 
-			  status & TxEmpty ? 1 : 0,
-			  status & SwInt ? 1 : 0);
-
 		rge_tx(priv);
 	}
 
 	if (status & LinkChg) {
-		RGE_DEBUG("Intr LinkChg = %d\n",
-			  status & LinkChg ? 1 : 0);
 		mii_check_media(&priv->mii_if, netif_msg_link(priv), false);
 		rgew16(IntrStatus, LinkChg);
 	}
@@ -853,7 +776,7 @@ static netdev_tx_t rge_start_xmit(struct sk_buff *skb, struct net_device *dev)
 		dma_addr_t mapping;
 
 		len = skb->len;
-		mapping = (u32)skb->data & ~KSEG_MASK;
+		mapping = CPHYSADDR(skb->data);
 		RGE_VLAN_TX_TAG(txd, vlan_tag);
 		txd->addr = mapping;
 
@@ -861,8 +784,8 @@ static netdev_tx_t rge_start_xmit(struct sk_buff *skb, struct net_device *dev)
 		txd->opts1 = eor | len | DescOwn | FirstFrag | LastFrag | TxCRC;
 		wmb();
 
-		SKB_PRIVATE(skb,SKB_PRIV_MAPPING) = mapping;
-		SKB_PRIVATE(skb,SKB_PRIV_FRAG) = 0;
+		SKB_PRIVATE(skb, SKB_PRIV_MAPPING) = mapping;
+		SKB_PRIVATE(skb, SKB_PRIV_FRAG) = 0;
 		priv->tx_skb[entry] = skb;
 		entry = NEXT_TX(entry);
 	} else {
@@ -876,9 +799,9 @@ static netdev_tx_t rge_start_xmit(struct sk_buff *skb, struct net_device *dev)
 		 */
 		first_eor = eor;
 		first_len = skb_headlen(skb);
-		first_mapping = (u32)skb->data & ~KSEG_MASK;
-		SKB_PRIVATE(skb,SKB_PRIV_MAPPING) = first_mapping;
-		SKB_PRIVATE(skb,SKB_PRIV_FRAG) = 1;
+		first_mapping = CPHYSADDR(skb->data);
+		SKB_PRIVATE(skb, SKB_PRIV_MAPPING) = first_mapping;
+		SKB_PRIVATE(skb, SKB_PRIV_FRAG) = 1;
 		priv->tx_skb[entry] = skb;
 		entry = NEXT_TX(entry);
 
@@ -889,7 +812,7 @@ static netdev_tx_t rge_start_xmit(struct sk_buff *skb, struct net_device *dev)
 			dma_addr_t mapping;
 
 			len = this_frag->size;
-			mapping = (u32)this_frag->page_offset & ~KSEG_MASK;
+			mapping = CPHYSADDR(this_frag->page_offset);
 			eor = (entry == (RGE_TX_RING_SIZE - 1)) ? RingEnd : 0;
 
 			ctrl = eor | len | DescOwn | TxCRC;
@@ -905,8 +828,8 @@ static netdev_tx_t rge_start_xmit(struct sk_buff *skb, struct net_device *dev)
 			txd->opts1 = ctrl;
 			wmb();
 
-			SKB_PRIVATE(skb,SKB_PRIV_MAPPING) = mapping;
-			SKB_PRIVATE(skb,SKB_PRIV_FRAG) += 2;
+			SKB_PRIVATE(skb, SKB_PRIV_MAPPING) = mapping;
+			SKB_PRIVATE(skb, SKB_PRIV_FRAG) += 2;
 			priv->tx_skb[entry] = skb;
 			entry = NEXT_TX(entry);
 		}
@@ -943,9 +866,6 @@ static void __rge_set_rx_mode(struct net_device *dev)
 	u32 mc_filter[2];	/* Multicast hash filter */
 	int rx_mode;
 	u32 tmp;
-
-	RGE_DEBUG("dev.flags = %08x, promisc = %d, allmulti = %d\n",
-		  dev->flags, dev->flags & IFF_PROMISC, dev->flags & IFF_ALLMULTI);
 
 	/* Note: do not reorder, GCC is clever about common statements. */
 	if (dev->flags & IFF_PROMISC) {
@@ -1053,9 +973,10 @@ static void rge_init_hw(struct rge_private *priv)
 	int phy_id = priv->mii_if.phy_id;
 	u8 status, timeout;
 	u32 *hwaddr;
-	
+
 	timeout = 10;
-	while (timeout-- && ((rge_mdio_read(dev, phy_id, 1) & 0xffdb) != 0x7849)) {
+	while (timeout--
+	       && ((rge_mdio_read(dev, phy_id, 1) & 0xffdb) != 0x7849)) {
 		mdelay(100);
 	}
 
@@ -1084,20 +1005,16 @@ static void rge_init_hw(struct rge_private *priv)
 
 	rgew32(TxConfig, 0x00000c00);
 	rgew8(RxPseDesThres, ThresholdVal);
-	rgew8(RxCpuEthernetDesNum, RGE_RX_RING_SIZE-1);
+	rgew8(RxCpuEthernetDesNum, RGE_RX_RING_SIZE - 1);
 	rgew8(RxRingSize, RingSize64);
 
 	status = rger8(MiiStatus);
 	status |= TxFCE | RxFCE | ForceTx;
 	rgew8(MiiStatus, status);
 
-	hwaddr = (u32*)(dev->dev_addr + 0);
-	RGE_DEBUG("write hwaddr = %08x%08x\n", __cpu_to_be32(hwaddr[0]), __cpu_to_be32(hwaddr[1]));
-//	rgew32(MAC0 + 0, __cpu_to_be32(*(dev->dev_addr + 0)));
-//	rgew32(MAC0 + 4, __cpu_to_be32(*(dev->dev_addr + 4)));
+	hwaddr = (u32 *) (dev->dev_addr + 0);
 	rgew32(MAC0 + 0, __cpu_to_be32(hwaddr[0]));
 	rgew32(MAC0 + 4, __cpu_to_be32(hwaddr[1]));
-	RGE_DEBUG("read hwaddr = %08x%08x\n", rger32(MAC0 + 0), rger32(MAC0 + 4));
 
 	rge_start_hw(priv);
 	__rge_set_rx_mode(dev);
@@ -1108,8 +1025,6 @@ static int rge_refill_rx(struct rge_private *priv)
 	struct net_device *dev = priv->dev;
 	unsigned i;
 
-	RGE_DEBUG("enter\n");
-
 	for (i = 0; i < RGE_RX_RING_SIZE; i++) {
 		struct sk_buff *skb;
 
@@ -1117,19 +1032,16 @@ static int rge_refill_rx(struct rge_private *priv)
 		if (!skb)
 			goto err_out;
 
-		RGE_DEBUG("skb = %p = netdev_alloc_skb(dev = %p, size = %d)\n",
-			  skb, dev, priv->rx_buf_sz + priv->rx_offset);
-
 		skb->dev = dev;
 		skb_reserve(skb, priv->rx_offset);
 
-		dma_cache_inv((u32)skb->data, priv->rx_buf_sz);                         /* replaced skb->tail with skb->data */
-		SKB_PRIVATE(skb,SKB_PRIV_MAPPING) = (u32)skb->data & ~KSEG_MASK;	/* replaced skb->tail with skb->data */
-		SKB_PRIVATE(skb,SKB_PRIV_FRAG) = 0;
+		dma_cache_inv((u32) skb->data, priv->rx_buf_sz);
+		SKB_PRIVATE(skb, SKB_PRIV_MAPPING) = CPHYSADDR(skb->data);
+		SKB_PRIVATE(skb, SKB_PRIV_FRAG) = 0;
 		priv->rx_skb[i] = skb;
 
 		priv->rx_ring[i].opts2 = 0;
-		priv->rx_ring[i].addr = SKB_PRIVATE(skb,SKB_PRIV_MAPPING);
+		priv->rx_ring[i].addr = SKB_PRIVATE(skb, SKB_PRIV_MAPPING);
 		priv->rx_ring[i].opts1 = DescOwn | priv->rx_buf_sz;
 		if (i == (RGE_RX_RING_SIZE - 1))
 			priv->rx_ring[i].opts1 |= RingEnd;
@@ -1150,14 +1062,8 @@ static void rge_init_rings_index(struct rge_private *priv)
 
 static int rge_init_rings(struct rge_private *priv)
 {
-	RGE_DEBUG("memset(dest=%p, val=%d, size=%d)\n", 
-		  priv->tx_ring, 0, sizeof(struct rge_desc) * RGE_TX_RING_SIZE);
-
 	memset(priv->tx_ring, 0, sizeof(struct rge_desc) * RGE_TX_RING_SIZE);
 	priv->tx_ring[RGE_TX_RING_SIZE - 1].opts1 = RingEnd;
-
-	RGE_DEBUG("memset(dest=%p, val=%d, size=%d)\n", 
-		  priv->rx_ring, 0, sizeof(struct rge_desc) * RGE_RX_RING_SIZE);
 
 	memset(priv->rx_ring, 0, sizeof(struct rge_desc) * RGE_RX_RING_SIZE);
 
@@ -1174,9 +1080,6 @@ static int rge_alloc_rings(struct rge_private *priv)
 				 RGE_RXRING_BYTES + RGE_TXRING_BYTES,
 				 &priv->ring_dma, GFP_ATOMIC);
 
-	RGE_DEBUG("mem = %p = dma_alloc_coherent(dev=%p, size=%d, dma_handle=%p, gfp=%d)\n", 
-		  mem, &priv->pdev->dev, RGE_RXRING_BYTES + RGE_TXRING_BYTES, &priv->ring_dma, GFP_ATOMIC);
-
 	priv->rxdesc_buf = NULL;
 	if (!mem) {
 		netdev_err(priv->dev, "Cannot allocate dma memory\n");
@@ -1186,8 +1089,7 @@ static int rge_alloc_rings(struct rge_private *priv)
 	priv->rxdesc_buf = mem;
 	memset(mem, 0, RGE_RXRING_BYTES + RGE_TXRING_BYTES);
 
-	mem =
-	    (void *)((u32) (mem + DESC_ALIGN - 1) & ~(DESC_ALIGN - 1));
+	mem = (void *)((u32) (mem + DESC_ALIGN - 1) & ~(DESC_ALIGN - 1));
 
 	priv->rx_ring = (struct rge_desc *)KSEG1ADDR(mem);
 	priv->tx_ring = &priv->rx_ring[RGE_RX_RING_SIZE];
@@ -1255,7 +1157,7 @@ static int rge_open(struct net_device *dev)
 		goto err_out_hw;
 
 	netif_carrier_off(dev);
-	mii_check_media(&priv->mii_if, netif_msg_link(priv), true);	/* FIXME: remove? */
+	mii_check_media(&priv->mii_if, netif_msg_link(priv), true);
 	netif_start_queue(dev);
 
 	return 0;
@@ -1583,13 +1485,9 @@ static int rge_set_mac_address(struct net_device *dev, void *p)
 
 	spin_lock_irq(&priv->lock);
 
-	hwaddr = (u32*)(dev->dev_addr + 0);
-	RGE_DEBUG("write hwaddr = %08x%08x\n", __cpu_to_be32(hwaddr[0]), __cpu_to_be32(hwaddr[1]));
-//	rgew32(MAC0 + 0, __cpu_to_be32(*(dev->dev_addr + 0)));
-//	rgew32(MAC0 + 4, __cpu_to_be32(*(dev->dev_addr + 4)));
+	hwaddr = (u32 *) (dev->dev_addr + 0);
 	rgew32(MAC0 + 0, __cpu_to_be32(hwaddr[0]));
 	rgew32(MAC0 + 4, __cpu_to_be32(hwaddr[1]));
-	RGE_DEBUG("read hwaddr = %08x%08x\n", rger32(MAC0 + 0), rger32(MAC0 + 4));
 
 	spin_unlock_irq(&priv->lock);
 
@@ -1652,8 +1550,10 @@ static int __init rge_probe(struct platform_device *pdev)
 	if (rtgalaxy_is_mars_soc()) {
 		priv->rx_offset = 0;
 
-		if ((rtgalaxy_soc_readl(RTGALAXY_SOC_CLOCK_ENABLE) & RTGALAXY_SOC_CLOCK_ENABLE_ETH) == 0) {
-			netdev_err(dev, "Realtek Mars ethernet clock disabled\n");
+		if ((rtgalaxy_soc_readl(RTGALAXY_SOC_CLOCK_ENABLE) &
+		     RTGALAXY_SOC_CLOCK_ENABLE_ETH) == 0) {
+			netdev_err(dev,
+				   "Realtek Mars ethernet clock disabled\n");
 			goto err_clock;
 		}
 	}
@@ -1688,9 +1588,6 @@ static int __init rge_probe(struct platform_device *pdev)
 	memcpy(dev->dev_addr, pdev->dev.platform_data, 6);
 	dev->dev_addr[6] = dev->dev_addr[7] = 0;
 
-//	memcpy(dev->perm_addr, pdev->dev.platform_data, 6);
-//	dev->perm_addr[6] = dev->perm_addr[7] = 0;
-
 	dev->netdev_ops = &rge_netdev_ops;
 	netif_napi_add(dev, &priv->napi, rge_rx_poll, 8);
 	dev->ethtool_ops = &rge_ethtool_ops;
@@ -1723,10 +1620,6 @@ static int __exit rge_remove(struct platform_device *pdev)
 {
 	struct net_device *dev = platform_get_drvdata(pdev);
 	struct rge_private *priv = netdev_priv(dev);
-
-	// dma_free_coherent();
-	// clk_disable();
-	// phy_detach(phy);
 
 	iounmap(priv->base);
 	priv->base = NULL;
