@@ -1037,6 +1037,26 @@ config GRETH
 	help
 	  Say Y here if you want to use the Aeroflex Gaisler GRETH Ethernet MAC.
 
+config RTGALAXY_ETH
+	tristate "Realtek Galaxy SoC Fast Ethernet support"
+	depends on NET_ETHERNET && RTGALAXY
+	select MII
+	help
+	  This is a driver for the Fast Ethernet network controller inside
+	  Realtek Galaxy SoCs. If you have one of those, say Y here.
+	  
+	  To compile this driver as a module, choose M here: the module
+	  will be called rtgalaxy-eth.
+
+config RTGALAXY_ETH_RX_MIT
+	bool "Use Rx Interrupt Mitigation"
+	depends on RTGALAXY_ETH
+	default y
+	help
+	  Say Y here to use Rx Interrupt Mittigation feature on Realtek Galaxy SoCs
+	  network controller. This will lower the interrupt count but also lowe the
+	  throughput.
+
 config SMC911X
 	tristate "SMSC LAN911[5678] support"
 	select CRC32

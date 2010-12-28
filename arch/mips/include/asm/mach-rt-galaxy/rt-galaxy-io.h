@@ -20,7 +20,15 @@
 #define rtgalaxy_writew(v, a)		(*(volatile unsigned short *) RTGALAXY_REGS_VA((a)) = (v))
 #define rtgalaxy_writel(v, a)		(*(volatile unsigned int   *) RTGALAXY_REGS_VA((a)) = (v))
 
+#define RTGALAXY_SOC_BASE		0x18000000
 #define RTGALAXY_REG_BASE		0x18010000
+
+#define rtgalaxy_soc_readb(a)		rtgalaxy_readb(RTGALAXY_SOC_BASE+a)
+#define rtgalaxy_soc_readw(a)		rtgalaxy_readw(RTGALAXY_SOC_BASE+a)
+#define rtgalaxy_soc_readl(a)		rtgalaxy_readl(RTGALAXY_SOC_BASE+a)
+#define rtgalaxy_soc_writeb(v, a)	rtgalaxy_writeb(v, RTGALAXY_SOC_BASE+a)
+#define rtgalaxy_soc_writew(v, a)	rtgalaxy_writew(v, RTGALAXY_SOC_BASE+a)
+#define rtgalaxy_soc_writel(v, a)	rtgalaxy_writel(v, RTGALAXY_SOC_BASE+a)
 
 #define rtgalaxy_reg_readb(a)		rtgalaxy_readb(RTGALAXY_REG_BASE+a)
 #define rtgalaxy_reg_readw(a)		rtgalaxy_readw(RTGALAXY_REG_BASE+a)
@@ -28,6 +36,19 @@
 #define rtgalaxy_reg_writeb(v, a)	rtgalaxy_writeb(v, RTGALAXY_REG_BASE+a)
 #define rtgalaxy_reg_writew(v, a)	rtgalaxy_writew(v, RTGALAXY_REG_BASE+a)
 #define rtgalaxy_reg_writel(v, a)	rtgalaxy_writel(v, RTGALAXY_REG_BASE+a)
+
+/*
+ * SoC Clock Register
+ */
+
+#define RTGALAXY_SOC_CLOCK_BASE_OFFSET		0x0000
+
+#define RTGALAXY_SOC_CLOCK_ENABLE_OFFSET	0x0c
+
+#define RTGALAXY_SOC_CLOCK_BASE			(RTGALAXY_SOC_CLOCK_BASE_OFFSET)
+#define RTGALAXY_SOC_CLOCK_ENABLE		(RTGALAXY_SOC_CLOCK_BASE+RTGALAXY_SOC_CLOCK_ENABLE_OFFSET)
+
+#define RTGALAXY_SOC_CLOCK_ENABLE_ETH		(1 << 9)
 
 /*
  * rt-galaxy registers

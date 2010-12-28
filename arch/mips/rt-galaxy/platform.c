@@ -87,6 +87,44 @@ static void __init rtgalaxy_register_uart(void)
 }
 
 /*
+ * rt-galaxy eth
+ */
+
+static struct resource rtgalaxy_eth_resource[] = {
+	{
+		.name	= "regs",
+		.flags	= IORESOURCE_MEM,
+		.start	= RTGALAXY_REG_BASE + RTGALAXY_ETH_BASE_OFFSET,
+		.end	= RTGALAXY_REG_BASE + RTGALAXY_ETH_BASE_OFFSET + 0x1000,
+	},
+	{
+		.name	= "irq",
+		.flags	= IORESOURCE_IRQ,
+		.start	= RTGALAXY_IRQ_ETH,
+		.end	= RTGALAXY_IRQ_ETH,
+	},
+};
+
+static struct platform_device rtgalaxy_eth_device = {
+	.id 		= 0,
+	.name		= "rtgalaxy-eth",
+	.dev = {
+		.platform_data	= NULL,
+	},
+	.resource	= rtgalaxy_eth_resource,
+	.num_resources	= ARRAY_SIZE(rtgalaxy_eth_resource),
+};
+
+static void __init rtgalaxy_register_eth(void)
+{
+	if (!rtgalaxy_info.board->has_eth0)
+		return;
+
+	rtgalaxy_eth_device.dev.platform_data = rtgalaxy_info.ethaddr;
+	platform_device_register(&rtgalaxy_eth_device);
+}
+
+/*
  * platform and device init
  */
 
@@ -97,6 +135,7 @@ void __init platform_init(void)
 static int __init rtgalaxy_devinit(void)
 {
 	rtgalaxy_register_uart();
+	rtgalaxy_register_eth();
 	return 0;
 }
 

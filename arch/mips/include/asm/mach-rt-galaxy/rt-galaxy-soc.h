@@ -8,6 +8,8 @@
 #ifndef _RTGALAXY_SOC_H_
 #define _RTGALAXY_SOC_H_
 
+#include <rt-galaxy-board.h>
+
 #define RTGALAXY_DEFAULT_LEXRA_MEMBASE	0x01b00000
 #define RTGALAXY_DEFAULT_HIGHMEM_START	0x02000000
 
@@ -35,5 +37,8 @@ static inline int rtgalaxy_is_jupiter_soc(void)
 {
 	return (rtgalaxy_info.chip_id == RTGALAXY_CHIPID_JUPITER);
 }
+
+#define soc_is_rtgalaxy()	\
+	(rtgalaxy_is_venus_soc() || rtgalaxy_is_neptune_soc() || rtgalaxy_is_mars_soc() || rtgalaxy_is_jupiter_soc())
 
 #endif
