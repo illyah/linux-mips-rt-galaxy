@@ -1047,6 +1047,11 @@ MODULE_LICENSE ("GPL");
 #define PLATFORM_DRIVER		ohci_hcd_pnx8550_driver
 #endif
 
+#ifdef CONFIG_RTGALAXY
+#include "ohci-rtgalaxy.c"
+#define PLATFORM_DRIVER		ohci_hcd_rtgalaxy_driver
+#endif
+
 #ifdef CONFIG_USB_OHCI_HCD_PPC_SOC
 #include "ohci-ppc-soc.c"
 #define PLATFORM_DRIVER		ohci_hcd_ppc_soc_driver
