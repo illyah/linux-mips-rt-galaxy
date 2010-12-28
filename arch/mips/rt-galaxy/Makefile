@@ -7,3 +7,7 @@ obj-$(CONFIG_RTGALAXY) += time.o
 obj-$(CONFIG_RTGALAXY) += board.o
 obj-$(CONFIG_RTGALAXY) += printk.o
 obj-$(CONFIG_RTGALAXY) += sb2.o
+
+ifdef CONFIG_USB
+obj-$(CONFIG_RTGALAXY) += usb.o
+endif

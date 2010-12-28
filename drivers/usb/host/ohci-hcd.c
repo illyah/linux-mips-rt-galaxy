@@ -1047,11 +1047,6 @@ MODULE_LICENSE ("GPL");
 #define PLATFORM_DRIVER		ohci_hcd_pnx8550_driver
 #endif
 
-#ifdef CONFIG_RTGALAXY
-#include "ohci-rtgalaxy.c"
-#define PLATFORM_DRIVER		ohci_hcd_rtgalaxy_driver
-#endif
-
 #ifdef CONFIG_USB_OHCI_HCD_PPC_SOC
 #include "ohci-ppc-soc.c"
 #define PLATFORM_DRIVER		ohci_hcd_ppc_soc_driver
@@ -1114,6 +1109,11 @@ MODULE_LICENSE ("GPL");
 #ifdef CONFIG_USB_OCTEON_OHCI
 #include "ohci-octeon.c"
 #define PLATFORM_DRIVER		ohci_octeon_driver
+#endif
+
+#ifdef CONFIG_RTGALAXY
+#include "ohci-rtgalaxy.c"
+#define PLATFORM_DRIVER		ohci_rtgalaxy_driver
 #endif
 
 #if	!defined(PCI_DRIVER) &&		\
