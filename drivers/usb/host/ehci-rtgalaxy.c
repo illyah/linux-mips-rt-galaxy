@@ -11,13 +11,27 @@
 
 extern void rtgalaxy_usbphy_setup(void);
 
-static void ehci_rtgalaxy_hw_start(void)
+static int ehci_rtgalaxy_init(struct usb_hcd *hcd)
 {
-	rtgalaxy_usbphy_setup();
-}
+       struct ehci_hcd *ehci = hcd_to_ehci(hcd);
+       int ret;
 
-static void ehci_rtgalaxy_hw_stop(void)
-{
+			 ehci->caps = hcd->regs;
+			 ehci->regs = hcd->regs +
+							 HC_LENGTH(ehci_readl(ehci, &ehci->caps->hc_capbase));
+
+       ehci->hcs_params = ehci_readl(ehci, &ehci->caps->hcs_params);
+       ehci->sbrn = 0x20;
+
+       ehci_reset(ehci);
+
+       ret = ehci_init(hcd);
+       if (ret)
+               return ret;
+
+       ehci_port_power(ehci, 0);
+
+       return 0;
 }
 
 static const struct hc_driver ehci_hcd_rtgalaxy_driver = {
@@ -34,7 +48,7 @@ static const struct hc_driver ehci_hcd_rtgalaxy_driver = {
     /*
      * basic lifecycle operations
      */
-    .reset =    ehci_init,
+    .reset =    ehci_rtgalaxy_init,
     .start =		ehci_run,
     .stop =			ehci_stop,
     .shutdown =		ehci_shutdown,
@@ -68,7 +82,6 @@ static const struct hc_driver ehci_hcd_rtgalaxy_driver = {
 static int ehci_rtgalaxy_drv_probe(struct platform_device *pdev)
 {
     struct usb_hcd *hcd;
-    struct ehci_hcd *ehci;
     struct resource *res_mem;
     int irq;
     int ret;
@@ -108,29 +121,17 @@ static int ehci_rtgalaxy_drv_probe(struct platform_device *pdev)
         goto err2;
     }
 
-    ehci_rtgalaxy_hw_start();
-
-    ehci = hcd_to_ehci(hcd);
-    ehci->caps = hcd->regs;
-    ehci->regs = hcd->regs +
-        HC_LENGTH(ehci_readl(ehci, &ehci->caps->hc_capbase));
-
     ret = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
     if (ret) {
         dev_dbg(&pdev->dev, "failed to add hcd with err %d\n", ret);
         goto err3;
     }
 
-    /* root ports should always stay powered */
-    ehci_port_power(ehci, 1);
-
     platform_set_drvdata(pdev, hcd);
 
     return 0;
 
 err3:
-    ehci_rtgalaxy_hw_stop();
-
     iounmap(hcd->regs);
 err2:
     release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
@@ -145,7 +146,6 @@ static int ehci_rtgalaxy_drv_remove(struct platform_device *pdev)
 
     usb_remove_hcd(hcd);
     
-    ehci_rtgalaxy_hw_stop();
     iounmap(hcd->regs);
     release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
     usb_put_hcd(hcd);
