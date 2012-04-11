@@ -105,6 +105,10 @@ static enum rtgalaxy_board_type rtgalaxy_detect_board(void)
 	 *
 	 * Xtreamer prom env: memsize=0x10000000 usb_otg=off otg_gpio=0 
 	 *                    12V5V_GPIO=44,hion 
+	 *
+	 * RevoView100 prom env: param_addr=10000 tv_system=PAL usb_otg=off 
+	 *			otg_gpio=0 POWERKEY_GPIO=78 12V5V_GPIO=44,hion 
+	 *			POWERKEY_IRRP=0x817ee286
 	 */
 	return RTGALAXY_BOARD_EM7080;
 
